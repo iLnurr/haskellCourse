@@ -1,4 +1,4 @@
-module Test where
+module Test (avg, factorial) where
 
 sayHello = putStrLn "Hello world from module Test!"
 
