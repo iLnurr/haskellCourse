@@ -83,4 +83,63 @@ let sndHead = snd . head
 oddsOnly :: Integral a => [a] -> [a]
 oddsOnly a = filter odd a
 
+last :: [a] -> a
+let last (x:[]) = x
+let last (_:xs) = last xs
+
+init :: [a] -> [a]
+let init [] = error "ERROR!!!"
+let init [x] = []
+let init (x:xs) = x : init xs
+
+init [1,2,3] -> [1,2]
+
+zip :: [a] -> [b] -> [(a,b)]
+zip [] _ = []
+zip as [] = []
+zip (a:as) (b:bs) = (a,b) : zip as bs
+
+zip3 :: [a] -> [b] -> [c] -> [(a,b,c)]
+zip3 (a:as) (b,bs) (c,cs) = (a,b,c) : zip3 as bs cs
+zip3 _ _ _ = []
+
+unzip [(a,b)] -> ([a], [b])
+unzip [] = ([],[])
+unzip ((x,y):xys) =
+  let (xs,ys) = unzip xys
+  in (x:xs,y:ys)
+
+**
+isPalindrome :: Eq a => [a] -> Bool
+isPalindrome a = a == reverse a
+
+**
+groupElems :: Eq a => [a] -> [[a]]
+groupElems []     = []
+groupElems (x:xs) = accum xs [x] []
+  where
+    accum []     acc     all  = reverse $ acc:all
+    accum (x:xs) (z:acc) all | x == z    = accum xs (z:z:acc) all
+    accum (x:xs) (z:acc) all | otherwise = accum xs [x] ((z:acc):all)
+
+take :: Int -> [a] -> [a]
+take n _ | n <= 0 = []
+take _ []         = []
+take n (x:xs)     = x : take (n-1) xs
+
+drop :: Int -> [a] -> [a]
+drop n xs | n <= 0 = xs
+drop _ []          = []
+drop n (_:xs)      = drop (n-1) xs
+
+splitAt :: Int -> [a] -> [[a],[a]]
+splitAt n xs = (take n xs, drop n xs)
+
+(!!) :: [a] -> Int -> a
+xs     !! n | n < 0 = error "ERR"
+[]     !! _         = error "ERR"
+(x:_)  !! 0         = x
+(x:xs) !! n         = xs !! (n-1)
+
 -}
+
