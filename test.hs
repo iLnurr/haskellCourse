@@ -275,6 +275,48 @@ any p = or . map p
 revWords :: String -> String
 let revWords = unwords . map reverse . words
 **
+
+**
+Реализуйте функцию delAllUpper, удаляющую из текста все слова, целиком состоящие из символов в верхнем регистре. Предполагается, что текст состоит только из символов алфавита и пробелов, знаки пунктуации, цифры и т.п. отсутствуют.
+
+GHCi> delAllUpper "Abc IS not ABC"
+"Abc not"
+Постарайтесь реализовать эту функцию как цепочку композиций, аналогично revWords из предыдущего видео.
+
+import Data.Char
+
+delAllUpper :: String -> String
+delAllUpper s = unwords . filter helper . words $ s
+  where
+    helper s = any (True ==) (map (\c -> isLower c) s)
+**
+
+
+zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+zipWith _ [] _  = []
+zipWith _ _ []  = []
+zipWith f (x:xs) (y:ys) = f x y : zipWith f xs ys
+
+**
+zipWith (+) [1,2] [3,4,5]
+[4,6]
+**
+
+**
+Напишите функцию max3, которой передаются три списка чисел одинаковой длины
+и которая возвращает список чисел той же длины, содержащий на k-ой позиции
+наибольшее значение из чисел на этой позиции в списках-аргументах.
+GHCi> max3 [7,2,9] [3,6,8] [1,8,10]
+[7,8,10]
+
+max3 :: Ord a => [a] -> [a] -> [a] -> [a]
+max3 a b c = zipWith3 (\x y z -> helper x y z) a b c
+  where
+    helper x y z | x >= y && x >= z = x
+                 | y >= x && y >= z = y
+                 | otherwise        = z
+**
+
 -}
 
 
