@@ -141,5 +141,55 @@ xs     !! n | n < 0 = error "ERR"
 (x:_)  !! 0         = x
 (x:xs) !! n         = xs !! (n-1)
 
+filter :: (a -> Bool) -> [a] -> [a] унарный предикат - функция принимающая один аргумент и возвращающая bool
+filter p [] = []
+filter p (x:xs)
+  | p x       = x : filter p xs
+  | otherwise = filter p xs
+
+takeWhile :: (a -> Bool) -> [a] -> [a]
+takeWhile _ [] = []
+takeWhile p (x:xs)
+  | p x       = x : takeWhile p xs
+  | otherwise = []
+
+dropWhile :: (a -> Bool) -> [a] -> [a]
+dropWhile _ [] = []
+dropWhile p xs@(x:xs')
+  | p x       = dropWhile p xs'
+  | otherwise = xs
+
+span :: (a -> Bool) -> [a] -> ([a], [a])
+span p xs = (takeWhile p xs, dropWhile p xs)
+
+break :: (a -> Bool) -> [a] -> ([a],[a])
+break p = span (not . p)
+
+
+**
+Напишите функцию readDigits, принимающую строку и возвращающую пару строк.
+Первый элемент пары содержит цифровой префикс исходной строки, а второй - ее оставшуюся часть.
+GHCi> readDigits "365ads"
+("365","ads")
+GHCi> readDigits "365"
+("365","")
+
+import Data.Char
+
+readDigits :: String -> (String, String)
+readDigits s = span (isDigit) s
+
+**
+Реализуйте функцию filterDisj, принимающую два унарных предиката и список, и возвращающую список элементов, удовлетворяющих хотя бы одному из предикатов.
+
+GHCi> filterDisj (< 10) odd [7,8,10,11,12]
+[7,8,11]
+
+filterDisj :: (a -> Bool) -> (a -> Bool) -> [a] -> [a]
+filterDisj a b [] = []
+filterDisj a b (x:xs)
+  | (a x) || (b x) = x : filterDisj a b xs
+  | otherwise = filterDisj a b xs
+
 -}
 
