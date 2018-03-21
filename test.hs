@@ -254,7 +254,28 @@ perms [x] = [[x]]
 perms (x:xs) = concatMap (insertElem x) (perms xs) where
 			insertElem x [] = [[x]]
 			insertElem x yss@(y:ys) = (x:yss) : map (y:) (insertElem x ys)
+**
 
 
+and, or :: [Bool] -> Bool
+
+and [] = True
+and (x:xs) = x && and xs
+
+or [] = False
+or (x,xs) = x || or xs
+
+all :: (a -> Bool) -> [a] -> Bool
+all p = and . map p
+
+any :: (a -> Bool) -> [a] -> Bool
+any p = or . map p
+
+**
+revWords :: String -> String
+let revWords = unwords . map reverse . words
+**
 -}
+
+
 
