@@ -43,6 +43,7 @@ cons42 [1,2,3]
 **
 addTwoElements :: a -> a -> [a] -> [a]
 addTwoElements a b c= a : b : c
+**
 
 **
 Реализуйте функцию nTimes, которая возвращает список, состоящий из повторяющихся значений ее первого аргумента. Количество повторов определяется значением второго аргумента этой функции.
@@ -51,7 +52,7 @@ nTimes a b = helper a b []
   where
     helper a 0 acc = acc
     helper a b acc = helper a (b - 1) (a : acc)
-
+**
 
 head :: [a] -> a
 head [1,2,3] = 1
@@ -82,6 +83,7 @@ let sndHead = snd . head
 Сформируйте список целых чисел, содержащий только те элементы исходного списка, значение которых нечетно.
 oddsOnly :: Integral a => [a] -> [a]
 oddsOnly a = filter odd a
+**
 
 last :: [a] -> a
 let last (x:[]) = x
@@ -121,6 +123,7 @@ groupElems (x:xs) = accum xs [x] []
     accum []     acc     all  = reverse $ acc:all
     accum (x:xs) (z:acc) all | x == z    = accum xs (z:z:acc) all
     accum (x:xs) (z:acc) all | otherwise = accum xs [x] ((z:acc):all)
+**
 
 take :: Int -> [a] -> [a]
 take n _ | n <= 0 = []
@@ -190,6 +193,46 @@ filterDisj a b [] = []
 filterDisj a b (x:xs)
   | (a x) || (b x) = x : filterDisj a b xs
   | otherwise = filterDisj a b xs
+**
+
+ **
+ Напишите реализацию функции qsort. Функция qsort должная принимать на вход список элементов и сортировать его в порядке возрастания с помощью сортировки Хоара: для какого-то элемента x изначального списка (обычно выбирают первый) делить список на элементы меньше и не меньше x, и потом запускаться рекурсивно на обеих частях.
+
+ GHCi> qsort [1,3,2,5]
+ [1,2,3,5]
+
+ qsort :: Ord a => [a] -> [a]
+ qsort [] = []
+ qsort (x:xs) = qsort (filter (<x) xs) ++ [x] ++ qsort (filter (>=x) xs)
+ **
+
+map :: (a -> b) -> [a] -> [b]
+map _ [] -> []
+map f (x:xs) = f x : map f xs
+
+concat :: [[a]] -> [a]
+concat []       = []
+concat (xs:xss) = xs ++ concat xss
+
+concatMap :: (a -> [b]) -> [a] -> [b]
+concatMap f xs = concat (map f xs)
+
+**
+Prelude> concatMap (\x -> [x,x,x]) "ABCD"
+"AAABBBCCCDDD"
+**
+
+**
+Напишите функцию squares'n'cubes, принимающую список чисел,
+и возвращающую список квадратов и кубов элементов исходного списка.
+GHCi> squares'n'cubes [3,4,5]
+[9,27,16,64,25,125]
+
+squares'n'cubes :: Num a => [a] -> [a]
+squares'n'cubes xs = concatMap (\x -> [x * x, x * x * x]) xs
+**
+
+
 
 -}
 
