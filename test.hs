@@ -317,7 +317,46 @@ max3 a b c = zipWith3 (\x y z -> helper x y z) a b c
                  | otherwise        = z
 **
 
--}
+"Генераторы списков"
 
+"Незавершающаяся программа"
+let bot = not bot
+
+"Бесконечный список единиц - продуктивная расходящаяся программа"
+let ones = 1 : ones
+
+"Ленивая природа хаскеля позволяет работать с продуктивными расходящимяся программами"
+
+nats :: Num t => t -> [t]
+let nats n = n : nats (n + 1)
+
+take 10 $ nats 5
+[5,6,7,8,9,10,11,12,13,14]
+
+head $ nats 42
+[42]
+
+squares :: Num b => [b]
+let squares = map (^2) $ nats 1
+
+**
+Реализуйте c использованием функции zipWith функцию fibStream, возвращающую бесконечный список чисел Фибоначчи.
+
+GHCi> take 10 $ fibStream
+[0,1,1,2,3,5,8,13,21,34]
+
+fibStream :: [Integer]
+fibStream = fibSt [0] [1]
+
+fibSt [] _ = []
+fibSt _ [] = []
+fibSt xs ys = xs ++ ys ++ tail (fibSt ys (tail (helper xs ys)))
+  where
+    helper a b = a ++ (zipWith (+) a b)
+
+
+
+
+-}
 
 
