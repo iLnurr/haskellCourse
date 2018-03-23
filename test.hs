@@ -11,7 +11,76 @@ factorial n  | n >= 0   = helper 1 n
    where
      helper acc 0 = acc
      helper acc n = (helper $! (acc * n)) (n - 1)
+{-
+**
+Реализуйте класс типов Printable, предоставляющий один метод toString — функцию одной переменной, которая преобразует значение типа, являющегося представителем Printable, в строковое представление.
 
+Сделайте типы данных Bool и () представителями этого класса типов, обеспечив следующее поведение:
+
+GHCi> toString True
+"true"
+GHCi> toString False
+"false"
+GHCi> toString ()
+"unit type"
+
+class Printable a where
+  toString :: a -> String
+
+instance Printable Bool where
+  toString True   =  "true"
+  toString False  =  "false"
+
+instance Printable () where
+  toString ()   =  "unit type"
+**
+
+
+**
+Сделайте тип пары представителем класса типов Printable, реализованного вами в предыдущей задаче, обеспечив следующее поведение:
+
+GHCi> toString (False,())
+"(false,unit type)"
+GHCi> toString (True,False)
+"(true,false)"
+Примечание. Объявление класса типов Printable и представителей этого класса для типов () и  Bool заново реализовывать не надо — они присутствуют в программе, вызывающей ваш код.
+
+instance (Printable a, Printable b) => Printable (a, b) where
+  toString (a, b)  =  "(" ++ toString a ++ "," ++ toString b ++ ")"
+**
+
+**
+Пусть существуют два класса типов KnownToGork и KnownToMork, которые предоставляют методы stomp (stab) и doesEnrageGork (doesEnrageMork) соответственно:
+
+class KnownToGork a where
+    stomp :: a -> a
+    doesEnrageGork :: a -> Bool
+
+class KnownToMork a where
+    stab :: a -> a
+    doesEnrageMork :: a -> Bool
+Класса типов KnownToGorkAndMork является расширением обоих этих классов, предоставляя дополнительно метод stompOrStab:
+
+class (KnownToGork a, KnownToMork a) => KnownToGorkAndMork a where
+    stompOrStab :: a -> a
+Задайте реализацию по умолчанию метода stompOrStab, которая вызывает метод stomp, если переданное ему значение приводит в ярость Морка; вызывает stab, если оно приводит в ярость Горка и вызывает сначала stab, а потом stomp, если оно приводит в ярость их обоих. Если не происходит ничего из вышеперечисленного, метод должен возвращать переданный ему аргумент
+
+class KnownToGork a where
+    stomp :: a -> a
+    doesEnrageGork :: a -> Bool
+
+class KnownToMork a where
+    stab :: a -> a
+    doesEnrageMork :: a -> Bool
+
+class (KnownToGork a, KnownToMork a) => KnownToGorkAndMork a where
+    stompOrStab :: a -> a
+    stompOrStab a | (doesEnrageGork a, doesEnrageMork a) == (True, False) = stab a
+                  | (doesEnrageGork a, doesEnrageMork a) == (False, True) = stomp a
+                  | (doesEnrageGork a, doesEnrageMork a) == (False, False) = a
+                  | (doesEnrageGork a, doesEnrageMork a) == (True, True) = stomp (stab a)
+**
+-}
 
 {-
 
@@ -354,8 +423,61 @@ fibSt xs ys = xs ++ ys ++ tail (fibSt ys (tail (helper xs ys)))
     helper a b = a ++ (zipWith (+) a b)
 **
 
+repeat :: a -> [a]
+repeat x = xs where xs = x : xs
+
+replicate ::  Int -> a -> [a]
+replicate n x = take n (repeat x)
+
+cycle :: [a] -> [a]
+cycle [] = error "cycle: empty list"
+cycle xs = ys where ys = xs ++ ys
+
+iterate :: (a -> a) -> a -> [a]
+iterate f x = x :: iterate f (f x)
+
+"Арифметические последовательности"
+
+[1..10]
+enumFromTo 1 10
+['a'..'z']
+
+[1,3..10]
+enumFromThenTo 1 3 10
+
+[1..]
+enumFrom 1
+
+[7,14..]
+enumFromThen 7 14
+
+let xs = [1..20]
+[x^2 | x <- xs]
+"аналог теории множеств - множество икс квадрат где (|) икс принадлежит (<-) xs"
+
+[x^2 | x <- xs, x^2 < 200]
+"здесь уже в списке генераторов наложено условие"
+
+[(x,y) | x <- [1,2], y <- [1,2]]
+"можно комбинировать и сначало меняется правый генератор заем левый"
+
+[(x,y,z) | x <- xs, y <- xs, z <- xs, x^2 + y^2 == z^2]
+"пифагорово множество"
+
+**
+Пусть есть список положительных достоинств монет coins, отсортированный по возрастанию. Воспользовавшись механизмом генераторов списков, напишите функцию change, которая разбивает переданную ей положительную сумму денег на монеты достоинств из списка coins всеми возможными способами. Например, если coins = [2, 3, 7]:
 
 
+GHCi> change 7
+[[2,2,3],[2,3,2],[3,2,2],[7]]
+
+Примечание. Порядок монет в каждом разбиении имеет значение, то есть наборы [2,2,3] и [2,3,2] — различаются.
+Список coins определять не надо.
+
+change :: (Ord a, Num a) => a -> [[a]]
+change 0 = [[]]
+change a = [x:xs | x <- coins, a >= x, xs <- change (a - x)]
+**
 -}
 
 
