@@ -478,6 +478,43 @@ change :: (Ord a, Num a) => a -> [[a]]
 change 0 = [[]]
 change a = [x:xs | x <- coins, a >= x, xs <- change (a - x)]
 **
+
+"Правая свертка"
+
+sumList :: [Integer] -> [Integer]
+sumList [] = 0
+sumList (x:xs) = x + sumList xs
+
+productList :: [Integer] -> [Integer]
+productList [] = 1
+productList (x:xs) = x * productList xs
+
+concatList :: [[a]] -> [a]
+concatList [] = []
+concatList (x:xs) = x ++ concatList xs
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr f ini [] = ini
+foldr f ini (x:xs) = x `f` foldr f ini xs
+
+sumList' :: [Integer] -> [Integer]
+sumList' xs = foldr (+) 0 xs
+
+productList' :: [Integer] -> [Integer]
+productList' xs = foldr (*) 1 xs
+
+concatList' :: [[a]] -> [a]
+concatList' xs = foldr (++) [] xs
+
+"В бесточечном стиле"
+sumList'' :: [Integer] -> [Integer]
+sumList'' = foldr (+) 0
+
+productList'' :: [Integer] -> [Integer]
+productList'' = foldr (*) 1
+
+concatList'' :: [[a]] -> [a]
+concatList'' = foldr (++) []
 -}
 
 
