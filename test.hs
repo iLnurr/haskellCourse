@@ -550,13 +550,12 @@ sumOdd = foldr (\x s -> if odd x then x + s else s) 0
 
 foldr (-) 5 [1,2,3]
 -3
-
 (1 - (2 - (3 - 5)))
 -3
 
 foldl (-) 5 [1,2,3]
 -1
-
+(((5 - 1) - 2) - 3)
 
 -}
 
