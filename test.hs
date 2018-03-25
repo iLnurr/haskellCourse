@@ -515,6 +515,49 @@ productList'' = foldr (*) 1
 
 concatList'' :: [[a]] -> [a]
 concatList'' = foldr (++) []
+
+**
+-- посчитать сумму квадратов положительный элементов списка
+sumPositiveSquares :: [Integer] -> [Integer]
+sumPositiveSquares = foldr (\x s -> if x > 0 then x^2 + s else s) 0
+
+-- с использованием конструкции where let in
+sumPositiveSquares' :: [Integer] -> [Integer]
+sumPositiveSquares' = foldr f 0 where
+  f x s | x >0      = x^2 + s
+        | otherwise = s
+**
+
+**
+Используя функцию foldr, напишите реализацию функции lengthList, вычисляющей количество элементов в списке.
+
+GHCi> lengthList [7,6,5]
+3
+
+lengthList :: [a] -> Int
+lengthList = foldr (\x s-> 1 + s) 0
+**
+
+**
+Реализуйте функцию sumOdd, которая суммирует элементы списка целых чисел, имеющие нечетные значения:
+
+GHCi> sumOdd [2,5,30,37]
+42
+
+sumOdd :: [Integer] -> Integer
+sumOdd = foldr (\x s -> if odd x then x + s else s) 0
+**
+
+foldr (-) 5 [1,2,3]
+-3
+
+(1 - (2 - (3 - 5)))
+-3
+
+foldl (-) 5 [1,2,3]
+-1
+
+
 -}
 
 
