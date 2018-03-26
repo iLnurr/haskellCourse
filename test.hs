@@ -621,7 +621,74 @@ bar [] _ = []
 bar (x:xs) c = if (even c) then x:(bar xs (c+1)) else (bar xs (c+1))
 **
 
+foldr1 :: (a -> a -> a) -> [a] -> a
+foldr1 _ [x] = x
+foldr1 f (x:xs) = f x (foldr1 f xs)
+foldr1 _ [] = error "foldr1: EmptyList"
 
+foldl1 :: (a -> a -> a) -> [a] -> a
+foldl1 f (x:xs) = foldl f x xs
+foldl1 _ [] = error "foldl1: EmptyList"
+
+maximum :: (Ord a) => [a] -> a
+maximum  = foldl1 max
+
+**
+Напишите реализацию функции, возвращающей последний элемент списка, через foldl1.
+
+lastElem :: [a] -> a
+lastElem = foldl1 undefined
+
+lastElem :: [a] -> a
+lastElem = foldl1 (flip const)
+**
+
+**
+foldl f ini [1,2,3] ~>> ((ini `f` 1) `f` 2) `f` 3
+**
+
+scanl :: (b -> a -> b) -> b -> [a] -> [b]
+scanl f ini [] = [ini]
+scanl f ini (x:XS) = ini : scanl f (ini `f` x) xs
+
+**
+scanl (*) 1 [1..10]
+[1,1,2,6,24,120,720,5040,40320,362880,3628800]
+**
+
+facs :: (Num a, Enum a) => a
+facs = scanl (*) 1 [1..]
+
+partialSums :: Num a => [a] -> [a]
+partialSums = scanl (+) 0
+
+take 15 . partialSums . map (**(-1)) $ facs
+
+**
+foldr f ini [1,2,3] ~>> 1 `f` (2 `f` (3 `f` ini))
+**
+
+scanr :: (a -> b -> b) -> b -> [a] -> [b]
+scanr _ ini [] = [ini]
+scanr f ini (x:xs) = (x `f` q) : qs
+                        where qs@(q:_) = scanr f ini xs
+
+**
+scanr (+) 0 [1,2,3]
+[6,5,3,0]
+**
+
+unfold :: (b -> (a,b)) -> b -> [a]
+unfold f ini = let (x,ini') = f ini in
+  x : unfold f ini'
+
+**
+iterate f x == [x, f x, f (f x), f (f (f x)), ...]
+
+iterate :: (a -> a) -> a -> [a]
+**
+
+iterate f = unfold (\x -> (x,f x))
 -}
 
 
