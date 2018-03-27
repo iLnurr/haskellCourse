@@ -689,6 +689,34 @@ iterate :: (a -> a) -> a -> [a]
 **
 
 iterate f = unfold (\x -> (x,f x))
+
+Maybe
+
+find :: (a -> Bool) -> [a] -> Maybe a
+lookup :: Eq a => a -> [(a,b)] -> Maybe b
+
+
+unfoldr :: (b -> Maybe(a,b)) -> b -> [a]
+unfoldr f ini = helper (f ini) where
+  helper (Just (x,ini')) = x : unfoldr f ini'
+  helper Nothing        = []
+
+unfoldr (\x -> if x == 10 then Nothing else Just (x, x + 2)) 0
+[0,2,4,6,8]
+
+unfoldr () 'a'
+
+**
+Используя unfoldr, реализуйте функцию, которая возвращает в обратном алфавитном порядке список символов, попадающих в заданный парой диапазон. Попадание символа x в диапазон пары (a,b) означает, что x >= a и x <= b.
+
+revRange :: (Char,Char) -> [Char]
+revRange = unfoldr g
+  where g = undefined
+GHCi> revRange ('a','z')
+"zyxwvutsrqponmlkjihgfedcba"
+
+revRange :: (Char,Char) -> [Char]
+revRange (x,y) = reverse $ unfoldr (\ini -> if (ini >= x && ini <= y) then Just (ini, succ ini) else Nothing) x
+**
+
 -}
-
-
