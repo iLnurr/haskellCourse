@@ -720,3 +720,183 @@ revRange (x,y) = reverse $ unfoldr (\ini -> if (ini >= x && ini <= y) then Just 
 **
 
 -}
+
+
+{-
+import Prelude hiding (Bool,True,False)
+
+data Bool = True | False
+
+--имя типа = конструкторы данных разделенных `|`
+
+alwaysTrue :: Int -> Bool
+alwaysTrue n = True
+
+data B = T | F deriving (Show,Eq,Read,Enum)
+-- deriving - автоматическая реализация производных представителей (в данном случае представиель класса В становится представителем класса Show)
+
+not' :: B -> B
+not' T = F
+
+Prelude> :set -fwarn-incomplete-patterns
+
+not'' :: B -> B
+not'' T = F
+not'' F = T
+
+**
+Тип данных Color определен следующим образом
+
+data Color = Red | Green | Blue
+Определите экземпляр класса Show для типа Color, сопоставляющий каждому из трех цветов его текстовое представление.
+
+GHCi> show Red
+"Red"
+
+instance Show Color where
+    show Red = "Red"
+    show Green = "Green"
+    show Blue = "Blue"
+**
+
+intToChar :: Int -> Char
+intToChar 0 = '0'
+intToChar 1 = '1'
+intToChar 2 = '2'
+intToChar 3 = '3'
+intToChar 4 = '4'
+intToChar 5 = '5'
+intToChar _ = 'N'
+
+isz :: Char - > Bool
+isz 'z' = True
+isz _   = False
+
+stringToBool :: String -> Bool
+stringToBool "true" = True
+stringToBool "false" = False
+
+**
+Определите частичную (определенную на значениях от '0' до '9') функцию charToInt.
+
+GHCi> charToInt '0'
+0
+GHCi> charToInt '9'
+9
+
+charToInt :: Char -> Int
+charToInt '0' = 0
+charToInt '1' = 1
+charToInt '2' = 2
+charToInt '3' = 3
+charToInt '4' = 4
+charToInt '5' = 5
+charToInt '6' = 6
+charToInt '7' = 7
+charToInt '8' = 8
+charToInt '9' = 9
+**
+
+**
+Определите (частичную) функцию stringToColor, которая по строковому представлению цвета как в прошлой задаче возвращает исходный цвет.
+
+
+GHCi> stringToColor "Red"
+Red
+
+data Color = Red | Green | Blue
+
+stringToColor :: String -> Color
+stringToColor "Red" = Red
+stringToColor "Green" = Green
+stringToColor "Blue" = Blue
+**
+
+Сопоставление с образцом 3 следующих состояния:
+ 1 - Успешное сопоставление с образцом.
+ 2 - Неуспешное сопоставление с образцом, тогда переходим к следующему уравнению
+ 3 -  Расходящееся вычисление, возникшее в результате сопоставления с образцом.
+
+ Пункт 2 не эквивалентен пункту 3. Потому что неуспешное сопоставление с образцом, в отличие от пункта 3, совсем не всегда приводит к невозможности вычислить функцию, т.к. сопоставление со следующим образцом может произойти успешно, и функция вычислится.
+
+foo 1 2 = 3
+foo 0 _ = 5
+
+GHCi> foo 0 undefined <-- расходимости нет потому что вотрой аргумент не вычисляется (ленивые вычисления)
+5
+
+GHCi> foo undefined 0 <-- расходимость потому что по первому аргументу производятся энергичные вычисления
+*** Exception: Prelude.undefined
+
+GHCi> foo 2 2 <-- расходимость потому что паттерна не существет
+*** Exception: non-exhaustive pattern
+
+**
+Пусть определены следующие функции:
+
+emptyOrSingleton :: Bool -> a -> [a]
+emptyOrSingleton False _ = []
+emptyOrSingleton True x = [x]
+
+isEqual :: (Eq a, Eq b) => (a, b) -> (a, b) -> Bool
+isEqual (a, b) (a', b') = a == a' && b == b'
+
+Выберите варианты вызовов этих функций, при которых сопоставление с образцом будет осуществлено успешно.
+
+emptyOrSingleton True undefined
+isEqual (undefined, undefined) (undefined, undefined)
+emptyOrSingleton False undefined
+**
+
+**
+Тип LogLevel описывает различные уровни логирования.
+data LogLevel = Error | Warning | Info
+
+Определите функцию cmp, сравнивающую элементы типа LogLevel так, чтобы было верно, что Error > Warning > Info.
+GHCi> cmp Error Warning
+GT
+GHCI> cmp Info Warning
+LT
+
+cmp :: LogLevel -> LogLevel -> Ordering
+cmp Error Error = EQ
+cmp Warning Warning = EQ
+cmp Info Info = EQ
+cmp Error _ = GT
+cmp Info _  = LT
+cmp Warning Info = GT
+cmp Warning Error = LT
+**
+
+--Обычно сопсставления с образцом производится в левой части, но если нужно в правой то используется конструкция `case of`
+
+data LogLevel = Error | Warning | Info
+
+cmp :: LogLevel -> LogLevel -> Ordering
+
+lessThanError :: LogLevel -> Bool
+lessThanError lvl =
+  case cmp lvl Error of
+    LT -> True
+    _  -> False
+
+
+**
+Пусть объявлен следующий тип данных:
+
+data Result = Fail | Success
+
+
+И допустим определен некоторый тип данных SomeData и некоторая функция
+doSomeWork :: SomeData -> (Result,Int)
+возвращающая результат своей работы и либо код ошибки в случае неудачи, либо 0 в случае успеха.
+Определите функцию processData, которая вызывает doSomeWork и возвращает строку "Success" в случае ее успешного завершения, либо строку "Fail: N" в случае неудачи, где N — код ошибки.
+
+processData :: SomeData -> String
+processData somedata =
+  case doSomeWork somedata of
+    (Success,_) -> "Success"
+    (Fail,x)    -> "Fail: " ++ show x
+**
+
+-}
