@@ -899,4 +899,48 @@ processData somedata =
     (Fail,x)    -> "Fail: " ++ show x
 **
 
+data Point = Pt Double Double deriving Show
+
+origin :: Point
+origin = Pt Double Double
+
+distanceToOrigin :: Point -> Double
+distanceToOrigin (Pt x y) = sqrt (x^2 + y^2)
+
+**
+Реализуйте функцию distance, возвращающую расстояние между двумя точками.
+
+data Point = Point Double Double
+
+origin :: Point
+origin = Point 0.0 0.0
+
+distanceToOrigin :: Point -> Double
+distanceToOrigin (Point x y) = sqrt (x ^ 2 + y ^ 2)
+
+distance :: Point -> Point -> Double
+distance (Point x1 y1) (Point x2 y2) = sqrt ((x1 - x2)^2 + (y1 - y2)^2)
+**
+
+rootsOld :: Double -> Double -> Double -> (Double,Double)
+rootsOld a b c = (x1,x2) where
+  x1 = helper (-d)
+  x2 = helper (d)
+  helper x = (-b + x) / (2 * a)
+  d = sqrt discr
+  discr = b^2 - 4 * a * c
+
+data Roots = Roots Double Double | None
+  deriving Show
+
+roots :: Double -> Double -> Double -> Roots
+roots a b c
+  | discr >=0 = Roots x1 x2
+  | otherwise = None
+  where
+    x1 = helper (-d)
+    x2 = helper (d)
+    helper x = (-b + x) / (2 * a)
+    d = sqrt discr
+    discr = b^2 - 4 * a * c
 -}
