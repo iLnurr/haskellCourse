@@ -983,4 +983,66 @@ doSomeWork' x =
     (_, er) -> Fail' er
 **
 
+**
+Реализуйте функцию isSquare, проверяющую является ли фигура квадратом.
+
+data Shape = Circle Double | Rectangle Double Double
+
+square :: Double -> Shape
+square a = Rectangle a a
+
+isSquare :: Shape -> Bool
+isSquare (Circle a) = False
+isSquare (Rectangle a b) = if a == b then True else False
+**
+
+-- неопровержимые образцы
+-- ленивый образец ~
+
+fromMaybe (Just x) = x
+fromMaybe Nothing  = error "!!!"
+
+fromMaybe' ~(Just x) = x
+fromMaybe' Nothing  = error "!!!" -- сюда никогда не доберемся!
+
+
+
+(***) :: (a -> b) -> (c -> d) -> (a,c) -> (b.d)
+(***) f g p = (f $ fst p, g $ snd p)
+
+Prelude> succ *** pred (5,5)
+(6,4)
+Prelude> const 1 *** const 2 $ (5,5)
+(1,2)
+Prelude> const 1 *** const 2 $ (undefined,undefined)
+(1,2)
+Prelude> const 1 *** const 2 $ undefined
+(1,2)
+
+-- пример на сопоставлении с образцом
+(***) :: (a -> b) -> (c -> d) -> (a,c) -> (b.d)
+(***) f g (x,y) = (f x, g y)
+
+Prelude> succ *** pred (5,5)
+(6,4)
+Prelude> const 1 *** const 2 $ (5,5)
+(1,2)
+Prelude> const 1 *** const 2 $ (undefined,undefined)
+(1,2)
+Prelude> const 1 *** const 2 $ undefined
+*** Exception Prelude.undefined
+
+-- пример на сопоставлении с ленивым образцом
+(***) :: (a -> b) -> (c -> d) -> (a,c) -> (b.d)
+(***) f g ~(x,y) = (f x, g y)
+
+Prelude> succ *** pred (5,5)
+(6,4)
+Prelude> const 1 *** const 2 $ (5,5)
+(1,2)
+Prelude> const 1 *** const 2 $ (undefined,undefined)
+(1,2)
+Prelude> const 1 *** const 2 $ undefined
+(1,2)
+
 -}
