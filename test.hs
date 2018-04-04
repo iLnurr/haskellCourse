@@ -1045,4 +1045,127 @@ Prelude> const 1 *** const 2 $ (undefined,undefined)
 Prelude> const 1 *** const 2 $ undefined
 (1,2)
 
+-- Синтаксис записей
+data Person' = Person' String String Int
+
+firstName' :: Person' -> String
+firstName' (Person x _ _) = x
+
+lastName' :: Person' -> String
+lastName (Person' _ y _) = y
+
+age' :: Person' -> Int
+age' (Person' _ _ z) = z
+
+data Person = Person { firstName :: String, lastName :: String, age :: Int } deriving (Show, Eq)
+
+Prelude> :t firstName
+firstName :: Person -> String
+
+Prelude> let john = Person "John" "Smith" 33
+Prelude> age john
+33
+Prelude> lastName john
+"Smith"
+Prelude> john
+Person {firstName = "John", lastName = "Smith", age = 33}
+
+infixl 1 &
+
+(&) :: a -> (a -> b) -> b
+x & f = f x
+
+Prelude> john & age
+33
+
+Prelude>f $ g $ h $ x
+Prelude>x & h & g & f -- Same? because of & is left associative
+
+**
+Определите тип записи, который хранит элементы лога. Имя конструктора должно совпадать с именем типа, и запись должна содержать три поля:
+
+    timestamp — время, когда произошло событие (типа UTCTime);
+    logLevel — уровень события (типа LogLevel);
+    message — сообщение об ошибке (типа String).
+
+Определите функцию logLevelToString, возвращающую текстуальное представление типа LogLevel, и функцию logEntryToString, возвращающую текстуальное представление записи в виде:
+
+<время>: <уровень>: <сообщение>
+
+
+
+Для преобразование типа UTCTime в строку используйте функцию timeToString.
+
+import Data.Time.Clock
+import Data.Time.Format
+import System.Locale
+
+timeToString :: UTCTime -> String
+timeToString = formatTime defaultTimeLocale "%a %d %T"
+
+data LogLevel = Error | Warning | Info
+
+data LogEntry = LogEntry { timestamp :: UTCTime, logLevel :: LogLevel, message :: String }
+
+logLevelToString :: LogLevel -> String
+logLevelToString Error = "Error"
+logLevelToString Warning = "Warning"
+logLevelToString Info = "Info"
+
+logEntryToString :: LogEntry -> String
+logEntryToString (LogEntry t l s) = (timeToString t) ++ ": " ++ (logLevelToString l) ++ ": " ++ s
+**
+
+Prelude> let xavier = Person {age = 40,firstName = "Phideaux",lastName = "Xavier"} -- alternative way
+
+Prelude> let unknownBill = Person {firstName = "Bill"}
+<interactive>:9:19: Warning:
+    Fields of ‘Person’ not initialised: lastName, age
+    In the expression: Person {firstName = "Bill"}
+    In an equation for ‘unknownBill’:
+        unknownBill = Person {firstName = "Bill"}
+
+Prelude> unknownBill
+Person {firstName = "Bill", lastName = "*** Exception: <interactive>:9:19-45: Missing field in record construction lastName
+
+Prelude> firstName unknownBill
+"Bill"
+
+updateAge :: Int -> Person -> Person
+updateAge newAge person = person {age = newAge} -- здесь создается новый объект  Person
+
+**
+Определите функцию updateLastName person1 person2, которая меняет фамилию person2 на фамилию person1.
+
+data Person = Person { firstName :: String, lastName :: String, age :: Int }
+
+updateLastName :: Person -> Person -> Person
+updateLastName person1 person2 = person2 {lastName = (lastName person1)}
+**
+
+name :: Person -> String
+name person = firstName person ++ " " ++ lastName person
+
+name' :: Person -> String
+name' (Person fn ln _) = fn ++ " " ++ ln
+
+name'' :: Person -> String
+name'' (Person {lastName = ln,firstName = fn}) = fn ++ " " ++ ln
+
+**
+Определить функцию abbrFirstName, которая сокращает имя до первой буквы с точкой, то есть, если имя было "Ivan", то после применения этой функции оно превратится в "I.". Однако, если имя было короче двух символов, то оно не меняется.
+
+data Person = Person { firstName :: String, lastName :: String, age :: Int }
+
+abbrFirstName :: Person -> Person
+abbrFirstName p = Person {firstName = name, lastName = (lastName p), age = (age p)} where
+                    name = if length (firstName p) < 2
+                           then firstName p
+                           else (first_char):'.':[]
+                    first_char = head (firstName p)
+**
+
+
+
+
 -}
