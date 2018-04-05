@@ -1165,7 +1165,72 @@ abbrFirstName p = Person {firstName = name, lastName = (lastName p), age = (age 
                     first_char = head (firstName p)
 **
 
+-- Типы с параметрами
 
+data CoordD = CoordD Double Double
+
+data CoordI = CoordI Int Int
+
+data Coord a = Coord a a deriving Show -- конструктор типа применяется к типам порождая тип , конструктор данных применяется к данным порождая выражения
+
+Prelude> :t Coord
+Coord :: a -> a -> Coord a
+Prelude> Coord (3::Int) (4::Int)
+Coord 3 4
+Prelude> :t Coord (3::Int) (4::Int)
+Coord (3::Int) (4::Int) :: Coord Int
+Prelude> :t Coord (3.5::Double) (4.3::Double)
+Coord (3.5::Double) (4.3::Double) :: Coord Double
+
+**
+Реализуйте функции distance, считающую расстояние между двумя точками с вещественными координатами, и manhDistance, считающую манхэттенское расстояние между двумя точками с целочисленными координатами.
+
+data Coord a = Coord a a
+
+distance :: Coord Double -> Coord Double -> Double
+distance (Coord a1 a2) (Coord b1 b2) = sqrt ((a1 - b1)^2 + (a2 - b2)^2)
+
+manhDistance :: Coord Int -> Coord Int -> Int
+manhDistance (Coord a1 a2) (Coord b1 b2) = abs (a1 - a2) + abs (b1 - b2)
+**
+
+**
+Плоскость разбита на квадратные ячейки. Стороны ячеек параллельны осям координат. Координаты углов ячейки с координатой (0,0) имеют неотрицательные координаты. Один из углов этой ячейки имеет координату (0,0). С ростом координат ячеек увеличиваются координаты точек внутри этих ячеек.
+
+Реализуйте функции getCenter, которая принимает координату ячейки и возвращает координату ее центра, и функцию getCell, которая принимает координату точки и возвращает номер ячейки в которой находится данная точка. В качестве первого аргумента обе эти функции принимают ширину ячейки.
+
+data Coord a = Coord a a
+
+getCenter :: Double -> Coord Int -> Coord Double
+getCenter width (Coord x y) = (Coord centerX centerY) where
+                                 d = width/2
+                                 centerX = width * fromIntegral x + d
+                                 centerY = width * fromIntegral y + d
+
+getCell :: Double -> Coord Double -> Coord Int
+getCell width (Coord x y) = (Coord numX numY) where
+                                numX = floor (x / width)
+                                numY = floor (y / width)
+**
+
+
+-- Стандартные параметризованные типы
+
+twice :: a -> [a]  -- конструктор типов записанный в миксфиксной форме
+twice x => [x,x]
+
+twice :: a -> [] a -- конструктор типов записанный в префиксной форме
+twice x => [x,x]
+
+thrice :: a -> (,,) a a a -- конструктор типов записанный в префиксной форме
+thrice x => (,,) x x x    -- конструктор данных  записанный в префиксной форме
+
+id' :: (->) a a -- функциональная стрелочка также является конструктором параметризованного типа
+id' x = x
+
+data Maybe a = Nothing | Just a -- тип данных Maybe является примером типа с параметром
+
+data Either a b = Left a | Right b
 
 
 -}
