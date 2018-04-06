@@ -1232,5 +1232,45 @@ data Maybe a = Nothing | Just a -- тип данных Maybe является п
 
 data Either a b = Left a | Right b
 
+**
+Реализуйте функцию, которая ищет в строке первое вхождение символа, который является цифрой, и возвращает Nothing, если в строке нет цифр.
+
+import Data.Char(isDigit)
+
+findDigit :: [Char] -> Maybe Char
+findDigit [] = Nothing
+findDigit (x:xs) = if isDigit x then Just x else findDigit xs
+**
+
+**
+Реализуйте функцию findDigitOrX, использующую функцию findDigit (последнюю реализовывать не нужно). findDigitOrX должна находить цифру в строке, а если в строке цифр нет, то она должна возвращать символ 'X'. Используйте конструкцию case.
+
+import Data.Char(isDigit)
+
+findDigit :: [Char] -> Maybe Char
+
+findDigitOrX :: [Char] -> Char
+findDigitOrX s =
+  case findDigit s of
+    Nothing -> 'X'
+    Just res -> res
+**
+
+**
+Maybe можно рассматривать как простой контейнер, например, как список длины 0 или 1. Реализовать функции maybeToList и listToMaybe, преобразующие Maybe a в [a] и наоборот (вторая функция отбрасывает все элементы списка, кроме первого).
+
+maybeToList :: Maybe a -> [a]
+maybeToList a =
+  case a of
+    Nothing -> []
+    Just a -> [a]
+
+
+listToMaybe :: [a] -> Maybe a
+listToMaybe a = if length a >= 1 then Just (head a) else Nothing
+**
+
+
+
 
 -}
