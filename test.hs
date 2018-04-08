@@ -1270,7 +1270,73 @@ listToMaybe :: [a] -> Maybe a
 listToMaybe a = if length a >= 1 then Just (head a) else Nothing
 **
 
+-- Виды (kind)
 
+Prelude> :type 'c'
+'c' :: Char
+Prelude> :kind Char
+Char :: *
+Prelude> :k Int
+Int :: *
+Prelude> :k Maybe
+Maybe :: * -> *
+Prelude> :k Maybe Int
+Maybe Int :: *
+Prelude> :k Maybe Int Int
 
+<interactive>:1:1:
+    ‘Maybe’ is applied to too many type arguments
+    In a type in a GHCi command: Maybe Int Int
+Prelude> :k Either Int Int
+Either Int Int :: *
+Prelude> :k []
+[] :: * -> *
+Prelude> :k [] Int
+[] Int :: *
+Prelude> :k [Int]
+[Int] :: *
+Prelude> :k Int -> []
+
+<interactive>:1:8:
+    Expecting one more argument to ‘[]’
+    Expected a type, but ‘[]’ has kind ‘* -> *’
+    In a type in a GHCi command: Int -> []
+Prelude> :k Int -> [] Int
+Int -> [] Int :: *
+Prelude> :k (,)
+(,) :: * -> * -> *
+Prelude> :k (,,)
+(,,) :: * -> * -> * -> *
+Prelude> :k (->)
+(->) :: * -> * -> *
+
+-- Флаги строгости (аргумент вычисляется в момент создания - "энергично")
+
+data CoordLazy a = CoordLazy a a
+  deriving Show
+
+data CoordStrict a = CoordStrict !a !a
+  deriving Show
+
+getXLazy :: CoordLazy a -> a
+getXLazy (CoordLazy x _) = x
+
+getXStrict :: CoordStrict a -> a
+getXStrict (CoordStrict x _) = x
+
+Prelude> getXLazy (CoordLazy 3 5)
+3
+Prelude> getXStrict (CoordStrict 3 5)
+3
+Prelude> getXLazy (CoordLazy 3 undefined)
+3
+Prelude> getXStrict (CoordStrict 3 undefined)
+*** Exception: Prelude.undefined
+
+Prelude> 2 :+ 5 -- комплексное число (в этих типах данных используются флаги строгости)
+2 :+ 5
+
+-- data Complex a = !a :+ !a
+-- data Ratio a = !a :% !a
 
 -}
