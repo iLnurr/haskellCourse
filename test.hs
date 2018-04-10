@@ -1339,4 +1339,129 @@ Prelude> 2 :+ 5 -- комплексное число (в этих типах д�
 -- data Complex a = !a :+ !a
 -- data Ratio a = !a :% !a
 
+
+-- Рекурсивные типы данных
+
+data List a = Nil | Cons a (List a) deriving Show
+
+Prelude> :t Nil
+Nil :: List a
+Prelude> :t Cons 'z' Nil
+Cons 'z' Nil :: List Char
+Prelude> :t Cons 'y' (Cons 'z' Nil)
+Cons 'y' (Cons 'z' Nil) :: List Char
+Prelude> let yz = Cons 'y' (Cons 'z' Nil)
+Prelude> yz
+Cons 'y' (Cons 'z' Nil)
+Prelude> :t yz
+yz :: List Char
+Prelude> Cons 'x' yz
+Cons 'x' (Cons 'y' (Cons 'z' Nil))
+
+**
+Тип List, определенный ниже, эквивалентен определению списков из стандартной библиотеки в том смысле, что существуют взаимно обратные функции, преобразующие List a в [a] и обратно. Реализуйте эти функции.
+
+data List a = Nil | Cons a (List a)
+
+fromList :: List a -> [a]
+fromList Nil = []
+fromList (Cons a b) = a : (fromList b)
+
+toList :: [a] -> List a
+toList [] = Nil
+toList (x:xs) = Cons x (toList xs)
+**
+
+**
+Рассмотрим еще один пример рекурсивного типа данных:
+
+data Nat = Zero | Suc Nat
+Элементы этого типа имеют следующий вид: Zero, Suc Zero, Suc (Suc Zero), Suc (Suc (Suc Zero)), и так далее. Таким образом мы можем считать, что элементы этого типа - это натуральные числа в унарной системе счисления.
+
+Мы можем написать функцию, которая преобразует Nat в Integer следующим образом:
+
+fromNat :: Nat -> Integer
+fromNat Zero = 0
+fromNat (Suc n) = fromNat n + 1
+Реализуйте функции сложения и умножения этих чисел, а также функцию, вычисляющую факториал.
+
+data Nat = Zero | Suc Nat
+
+fromNat :: Nat -> Integer
+fromNat Zero = 0
+fromNat (Suc n) = fromNat n + 1
+
+toNat :: Integer -> Nat
+toNat 0 = Zero
+toNat n = Suc (toNat (n - 1))
+
+add :: Nat -> Nat -> Nat
+add a b = toNat ((fromNat a) + (fromNat b))
+
+mul :: Nat -> Nat -> Nat
+mul a b = toNat ((fromNat a) * (fromNat b))
+
+fac :: Nat -> Nat
+fac a = toNat (factorial (fromNat a))
+
+factorial :: Integer -> Integer
+factorial n  | n >= 0   = helper 1 n
+             | otherwise = error "arg must be >= 0"
+   where
+     helper acc 0 = acc
+     helper acc n = (helper $! (acc * n)) (n - 1)
+**
+
+**
+Тип бинарных деревьев можно описать следующим образом:
+
+data Tree a = Leaf a | Node (Tree a) (Tree a)
+
+Реализуйте функцию height, возвращающую высоту дерева, и функцию size, возвращающую количество узлов в дереве (и внутренних, и листьев). Считается, что дерево, состоящее из одного листа, имеет высоту 0.
+
+data Tree a = Leaf a | Node (Tree a) (Tree a)
+
+height :: Tree a -> Int
+height (Leaf a) = 0
+height (Node a b) = 1 + (max (height a) (height b))
+
+size :: Tree a -> Int
+size (Leaf a) = 1
+size (Node a b) = 1 + size a + size b
+**
+
+**
+Теперь нам нужно написать функцию avg, которая считает среднее арифметическое всех значений в дереве. И мы хотим, чтобы эта функция осуществляла только один проход по дереву. Это можно сделать при помощи вспомогательной функции, возвращающей количество листьев и сумму значений в них. Реализуйте эту функцию.
+
+data Tree a = Leaf a | Node (Tree a) (Tree a)
+
+avg :: Tree Int -> Int
+avg t =
+    let (c,s) = go t
+    in s `div` c
+  where
+    go :: Tree Int -> (Int,Int)
+    go (Leaf l) = (1,l)
+    go (Node l r) =
+        let (a,b) = go l
+            (e,d) = go r
+        in (a + e , b + d)
+**
+
+infixl 6 :+:
+infixl 7 :*:
+
+data Expr = Val Int | Expr :+: Expr | Expr :*: Expr
+  deriving (Show,Eq)
+
+expr1 = Val 2 :+: Val 3 :*: 4
+expr2 = (Val 2 :+: Val 3) :*: 4
+
+eval :: Expr -> Int
+eval (Val n) = n
+eval (e1 :+: e2) = eval e1 + eval e2
+eval (e1 :*: e2) = eval e1 * eval e2
+
+
+
 -}
