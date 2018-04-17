@@ -1462,6 +1462,32 @@ eval (Val n) = n
 eval (e1 :+: e2) = eval e1 + eval e2
 eval (e1 :*: e2) = eval e1 * eval e2
 
+-- Синонимы и обертки типов
+allUpper :: String -> Bool
+allUpper = all isUpper
+
+type IntegerList = [Integer]
+
+sumSquares :: IntegerList -> Integer
+sumSquares = foldr1 (+) . map (^2)
+
+type AssocList k v = [(k,v)] -- параметризованный тип
+
+lookup' :: Eq k -> AssocList k v -> Maybe v
+lookup' _ []  = Nothing
+lookup' key ((x,y):xys)
+  | key == x = Just y
+  | otherwise = lookup' key xys
+
+import qualified Data.Map as Map
+
+type IntMap = Map.Map Int
+
+Prelude Map> :k Map.Map
+Map.Map :: * -> * -> *
+Prelude Map> :k Map.Map Int
+Map.Map Int :: * -> *
+
 
 
 -}
