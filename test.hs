@@ -1488,6 +1488,50 @@ Map.Map :: * -> * -> *
 Prelude Map> :k Map.Map Int
 Map.Map Int :: * -> *
 
+newtype IntList = IList [Int] deriving Show -- обертка типа по сравнению с конструктором данных - 1) имеет ровно один (!) конструктор и более эффективную реализацию, 2) более ленив
+                                            -- контейнер используемый во время разработки, для контроля над типами
+example = IList [1,2]
+Preload> example
+IList [1,2]
+
+data IntList' = IList' [Int] deriving Show
+
+ignore' :: InList' -> String
+ignore' (IList' _) = "Hello" -- использует сопоставление с образцом и при вызове функции с undefined - будет брошено исключение
+
+ignore :: InList -> String
+ignore' (IList _) = "Hello" -- использует сопоставление с образцом  и при вызове функции с undefined - будет выведена строка, так как обертка типоа более ленива
+
+newtype Identity a = Identity {runIdentity :: a} deriving (Eq,Ord)
+
+*Demo> :k Identity -- про конструктор типа
+Identity :: * -> *
+*Demo> :t Identity -- про конструктор данных
+Identity :: a -> Identity a
+*Demo> :t runIdentity
+runIdentity :: Identity a -> a
+
+-- Monoid - класс типов, реализация математического определния Monoid
+
+class Monoid a where
+  mempty :: a             -- нейтралный элемент
+  mappend :: a -> a -> a  -- операция
+
+  mconcat :: [a] -> a     -- свертка
+  mconcat = foldr mappend mempty
+
+{- законы
+mempty  'mappend' x = x -- "Левый нейтральный элемент"
+x 'mappend' mempty = x  -- "Прваый нейтральный элемент"
+(x 'mappend' y) 'mappend' z = x 'mappend' (y 'mappend' z) -- "Требование к ассоциативности операции"
+ -}
+
+instance Monoid [a] where
+  mempty = []
+  mappend == (++)
+
+-- числа - дважды Monoid - относительно сложения и умножжения
+
 
 
 -}
