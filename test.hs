@@ -1511,7 +1511,7 @@ Identity :: a -> Identity a
 *Demo> :t runIdentity
 runIdentity :: Identity a -> a
 
--- Monoid - класс типов, реализация математического определния Monoid
+-- Monoid - класс типов, реализация математического определения Monoid
 
 class Monoid a where
   mempty :: a             -- нейтралный элемент
@@ -1530,8 +1530,68 @@ instance Monoid [a] where
   mempty = []
   mappend == (++)
 
--- числа - дважды Monoid - относительно сложения и умножжения
+
+Prelude> mconcat [[1,2],[],[3,4,5]]
+[1,2,3,4,5]
+
+-- числа - дважды Monoid - относительно сложения (mempty=0) и умножжения (mempty=1)
+
+для того чтобы числа использовать как моноиды - нужно задать упаковать в обертку newtype
+
+newtype Sum a = Sum {getSum :: a}
+  deriving (Eq, Ord, Show, Bounded)
+
+instance Num a => Monoid (Sum a) where
+  mempty = Sum 0
+  Sum x `mappend` Sum y = Sum (x + y)
+
+newtype Product a = Product {getProduct :: a}
+  deriving (Eq, Ord, Show, Bounded)
+
+instance Num a => Monoid (Product a) where
+  mempty = Product 1
+  Product x `mappend` Product y = Product (x * y)
+
+**
+Реализуйте представителя класса типов Monoid для типа Xor, в котором mappend выполняет операцию xor.
+
+newtype Xor = Xor { getXor :: Bool }
+    deriving (Eq,Show)
+
+instance Monoid Xor where
+    mempty = Xor False
+    Xor x `mappend` Xor y | x == True && y == False = Xor True
+                          | x == False && y == True = Xor True
+                          | otherwise = Xor False
+**
+
+-- Для пар и кортежей - они являются моноидами если их элементы являются моноидами
+
+instance (Monoid a, Monoid b) => Monoid (a,b) where
+  mempty = (mempty, mempty)
+  (x1,x2) `mappend` (y1,y2) =
+                (x1 `mappend` y1, x2 `mappend` y2)
 
 
+instance Monoid a => Monoid (Maybe a) where
+  mempty = Nothing
+  Nothing `mappend` m = m
+  m `mappend` Nothing = m
+  Just m1 `mappend` Just m2 = Just (m1 `mappend` m2)
+
+newtype First a = First {getFirst :: Maybe a}
+  deriving (Eq,Show,Ord,Read)
+
+instance Monoid (First a) where
+  mempty = First Nothing
+  First Nothing `mappend` r = r
+  l `mappend` _             = l
+
+Prelude> mconcat [First Nothing, First (Just 3), First (Just 5)]
+First {getFirst = Just 3}
+Prelude> mconcat $ map First [Nothing, (Just 3), (Just 5)]
+First {getFirst = Just 3}
+Prelude> getFirst $ mconcat $ map First [Nothing, (Just 3), (Just 5)]
+Just 3
 
 -}
