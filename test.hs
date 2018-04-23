@@ -1597,4 +1597,20 @@ Prelude> let firstConcat = getFirst . mconcat . map First
 Prelude> firstConcat [Nothing, Just 3, Just 5]
 Just 3
 
+-- Эндоморфизмы как моноиды
+Prelude> :t [(*2),(+5),(^2)]
+[(*2),(+5),(^2)] :: Num a => [a -> a]
+
+Prelude> zipWith ($) [(*2),(+5),(^2)] [1,2,3]
+[2,7,9]
+
+newtype Endo a = Endo { appEndo :: a -> a }
+
+instance Monoid (Endo a) where
+  mempty = Endo id
+  Endo f `mappend` Endo g = Endo (f . g) -- композиция функций
+
+
+
+
 -}
