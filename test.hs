@@ -1593,5 +1593,8 @@ Prelude> mconcat $ map First [Nothing, (Just 3), (Just 5)]
 First {getFirst = Just 3}
 Prelude> getFirst $ mconcat $ map First [Nothing, (Just 3), (Just 5)]
 Just 3
+Prelude> let firstConcat = getFirst . mconcat . map First
+Prelude> firstConcat [Nothing, Just 3, Just 5]
+Just 3
 
 -}
