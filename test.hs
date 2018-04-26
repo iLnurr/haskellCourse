@@ -1611,6 +1611,172 @@ instance Monoid (Endo a) where
   Endo f `mappend` Endo g = Endo (f . g) -- композиция функций
 
 
+-- Functor - "поднимает функцию в контейнер"
+
+class Functor f where
+  fmap :: (a -> b) -> f a -> f b
+
+instance Functor [] where
+  fmap = map
+
+Prelude> :t map
+map :: (a -> b) -> [a] -> [b]
+Prelude> :t fmap
+fmap :: Functor f => (a -> b) -> f a -> f b
+Prelude> map succ [1,2,3]
+[2,3,4]
+Prelude> fmap succ [1,2,3]
+[2,3,4]
+
+instance Functor Maybe where
+  fmap _ Nothing  = Nothing
+  fmap f (Just a) = Just (f a)
+
+Prelude> fmap (*2) Nothing
+Nothing
+Prelude> fmap (*2) (Just 21)
+Just 42
+
+**
+Определите представителя класса Functor для следующего типа данных, представляющего точку в трёхмерном пространстве:
+
+data Point3D a = Point3D a a a deriving Show
+
+GHCi> fmap (+ 1) (Point3D 5 6 7)
+Point3D 6 7 8
+
+instance Functor Point3D where
+    fmap f (Point3D a b c)= Point3D (f a) (f b) (f c)
+**
+
+**
+Определите представителя класса Functor для типа данных GeomPrimitive, который определён следующим образом:
+
+data GeomPrimitive a = Point (Point3D a) | LineSegment (Point3D a) (Point3D a)
+При определении, воспользуйтесь тем, что Point3D уже является представителем класса Functor.
+
+GHCi> fmap (+ 1) $ Point (Point3D 0 0 0)
+Point (Point3D 1 1 1)
+
+GHCi> fmap (+ 1) $ LineSegment (Point3D 0 0 0) (Point3D 1 1 1)
+LineSegment (Point3D 1 1 1) (Point3D 2 2 2)
+
+instance Functor GeomPrimitive where
+    fmap f (Point p) = Point (fmap f p)
+    fmap f (LineSegment p1 p2) = LineSegment (fmap f p1) (fmap f p2)
+**
+
+data Tree a = Leaf a | Branch (Tree a) a (Tree a)
+  deriving Show
+
+instance Functor Tree where
+  fmap g (Leaf x) = Leaf (g x)
+  fmap g (Branch l x r) = Branch (fmap g l) (g x) (fmap g r)
+
+testTree = Branch (Leaf 2) 3 (Leaf 4)
+
+Prelude> succ `fmap` [1,2,3]
+[2,3,4]
+Prelude> succ <$> [1,2,3]
+[2,3,4]
+Prelude> :i <$>
+(<$>) :: Functor f => (a -> b) -> f a -> f b
+        -- Defined in ‘Data.Functor’
+infixl 4 <$>
+Prelude> (+5) <$> succ <$> [1,2,3]
+[7,8,9]
+
+Prelude> :i <$
+class Functor (f :: * -> *) where
+  ...
+  (<$) :: a -> f b -> f a
+        -- Defined in ‘GHC.Base’
+infixl 4 <$
+Prelude> 42 <$ [1,2,3]
+[42,42,42]
+Prelude>
+
+**
+Определите представителя класса Functor для бинарного дерева, в каждом узле которого хранятся элементы типа Maybe:
+
+data Tree a = Leaf (Maybe a) | Branch (Tree a) (Maybe a) (Tree a) deriving Show
+
+GHCi> words <$> Leaf Nothing
+Leaf Nothing
+
+GHCi> words <$> Leaf (Just "a b")
+Leaf (Just ["a","b"])
+
+instance Functor Tree where
+    fmap f (Leaf m) = Leaf (fmap f m)
+    fmap f (Branch l x r) = Branch (fmap f l) (fmap f x) (fmap f r)
+**
+
+Prelude> :k (,)
+(,) :: * -> * -> *
+Prelude> :k (,) Int
+(,) Int :: * -> * -- kind подходит для реализации представителя класса типов Functor - так как второй тип мы связали с определенным типом (Int)
+
+instance Functor ((,) s) where
+  fmap g (x,y) = (x, g y)
+
+-- (a -> b) -> (s,a) -> (s,b)
+
+Prelude> fmap succ (1,'A')
+(1,'B')
+
+instance Functor (Either e) where
+  fmap _ (Left x)  = Left x
+  fmap f (Right y) = Right (g y)
+
+-- (a -> b) - > Either e a -> Either e b
+Prelude> fmap (+3) $ Right 5
+Right 8
+Prelude> fmap (+3) $ Left 5
+Left 5
+Prelude> fmap (+3) $ Left "AAA"
+Left "AAA"
+
+Prelude> :k (->)
+(->) :: TYPE q -> TYPE r -> *
+Prelude> :k (->) Int
+(->) Int :: * -> *
+
+instance Functor ((->) e) where
+  fmap = (.)
+
+-- (a -> b) -> (e -> a) -> (e -> b) - композиция функций
+Prelude> :t fmap length tail --
+fmap length tail :: [a] -> Int
+Prelude> fmap length tail "ABC"
+2
+
+**
+Определите представителя класса Functor для типов данных Entry и Map. Тип Map представляет словарь, ключами которого являются пары:
+
+data Entry k1 k2 v = Entry (k1, k2) v  deriving Show
+data Map k1 k2 v = Map [Entry k1 k2 v]  deriving Show
+
+В результате должно обеспечиваться следующее поведение: fmap применяет функцию к значениям в словаре, не изменяя при этом ключи.
+
+GHCi> fmap (map toUpper) $ Map []
+Map []
+
+GHCi> fmap (map toUpper) $ Map [Entry (0, 0) "origin", Entry (800, 0) "right corner"]
+Map [Entry (0,0) "ORIGIN",Entry (800,0) "RIGHT CORNER"]
+
+instance Functor (Entry k1 k2) where
+    fmap f (Entry (k1, k2) v) = Entry (k1, k2) (f v)
+
+instance Functor (Map k1 k2) where
+    fmap f (Map arr) =  Map (map g arr) where g = fmap f
+**
+
+{-Законы функторов. Их 2:
+(1)  fmap id xs = id xs
+(2)  fmap (f . g) xs = (fmap f . fmap g) xs
+гарантированно не меняется структура контейнера.
+-}
 
 
 -}
