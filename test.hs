@@ -1514,7 +1514,7 @@ runIdentity :: Identity a -> a
 -- Monoid - класс типов, реализация математического определения Monoid
 
 class Monoid a where
-  mempty :: a             -- нейтралный элемент
+  mempty :: a             -- нейтральный элемент
   mappend :: a -> a -> a  -- операция
 
   mconcat :: [a] -> a     -- свертка
@@ -1522,7 +1522,7 @@ class Monoid a where
 
 {- законы
 mempty  'mappend' x = x -- "Левый нейтральный элемент"
-x 'mappend' mempty = x  -- "Прваый нейтральный элемент"
+x 'mappend' mempty = x  -- "Правый нейтральный элемент"
 (x 'mappend' y) 'mappend' z = x 'mappend' (y 'mappend' z) -- "Требование к ассоциативности операции"
  -}
 

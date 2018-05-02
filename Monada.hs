@@ -204,8 +204,21 @@ data SomeType a = ...
 и он является представителем класса Monad. Сделайте его представителем класса Functor.
 
 instance Functor SomeType where
-    fmap f x = (>>=) x (return . f)
+    fmap f x = (>>=) x (\a -> return (f a))
 **
 
+-- Первый закон монад
+  return a >>= k   = k a
+-- Второй закон монад
+  m >>= return     = m
+-- Третий закон монад - ассоциативности
+  (m >>= k) >>= k' = m >>= (\x -> (k x) >>= k')
 
+
+Prelude> runIdentity $ (wrap'n'succ 3 >>= wrap'n'succ) >>= wrap'n'succ
+6
+Prelude> runIdentity $ wrap'n'succ 3 >>= (\x -> wrap'n'succ x >>= wrap'n'succ)
+6
+Prelude> runIdentity $ wrap'n'succ 3 >>= (\x -> wrap'n'succ x >>= \y -> wrap'n'succ y)
+6
 -}
