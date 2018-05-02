@@ -258,4 +258,33 @@ goWrap3 =
 
 Prelude> runIdentity goWrap3
 9
+
+-- Do-нотация (синтакисческий сахар для упрощения кодирования)
+do { e1 ; e2 }        ==  e1 >> e2
+do { p <- e1; e2 }    ==  e1 >>= \p -> e2
+do { let v = e1; e2 } ==  let v = e1 in do e2
+
+
+goWrap4 =
+  let i = 3 in
+  wrap'n'succ i >>= \x ->
+  wrap'n'succ x >>= \y ->
+  wrap'n'succ y >>
+  return (i,x+y)
+
+Prelude> runIdentity goWrap4
+(3,9)
+
+goWrap5 = do  -- порядок в этой конструкции важен - "полноценное императивное программирование"
+  let i = 3
+  x <- wrap'n'succ i
+  y <- wrap'n'succ x
+  wrap'n'succ y
+  return (i,x+y)
+
+Prelude> runIdentity goWrap5
+(3,9)
+Prelude> :t goWrap5
+goWrap5 :: Identity (Integer, Integer) -- здесь указан тип возвращаемого контейнера
+
 -}
