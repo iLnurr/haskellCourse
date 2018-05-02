@@ -221,4 +221,41 @@ Prelude> runIdentity $ wrap'n'succ 3 >>= (\x -> wrap'n'succ x >>= wrap'n'succ)
 6
 Prelude> runIdentity $ wrap'n'succ 3 >>= (\x -> wrap'n'succ x >>= \y -> wrap'n'succ y)
 6
+
+
+goWrap0 =
+  wrap'n'succ 3 >>=
+  wrap'n'succ >>=
+  wrap'n'succ >>=
+  return
+
+Prelude> runIdentity goWrap0
+6
+
+goWrap1 =
+  wrap'n'succ 3 >>= (\x ->
+  wrap'n'succ x >>= (\y ->
+  wrap'n'succ y >>= (\z ->
+  return z)))
+
+Prelude> runIdentity goWrap1
+6
+
+goWrap2 =
+  wrap'n'succ 3 >>= (\x -> -- x := succ 3 ;
+  wrap'n'succ x >>= (\y -> -- y := succ x ;
+  wrap'n'succ y >>= (\z -> -- z := succ y ;
+  return (x,y,z))))        -- return (x,y,z) ;
+
+Prelude> runIdentity goWrap2
+(4,5,6)
+
+goWrap3 =
+  wrap'n'succ 3 >>= \x ->
+  wrap'n'succ x >>= \y ->
+  wrap'n'succ y >>
+  return (x+y)
+
+Prelude> runIdentity goWrap3
+9
 -}
