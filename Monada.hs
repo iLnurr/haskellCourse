@@ -165,4 +165,47 @@ class Monad m where
 
 (<=<) :: Monad m => (b -> m c) -> (a -> m b) -> a -> m c -- оператор "рыбки" - оператор композиции стрелок клейсли
 (<=<) f g  x = g x >>= f
+
+-- Представитель класса типов Монад - Identity
+
+newtype Identity a = Identity {runIdentity :: a }
+  deriving (Eq,Show)
+
+instance Monad Identity where
+  return x = Identity x
+  Identity x >>= k = k x -- k - стрелка Клейсли
+
+wrap'n'succ :: Integer -> Identity Integer
+wrap'n'succ x = Identity (succ x)
+
+Prelude> runIdentity (wrap'n'succ 3)
+4
+Prelude> wrap'n'succ 3
+Identity {runIdentity = 4}
+Prelude> runIdentity $ wrap'n'succ 3
+4
+Prelude> runIdentity $ wrap'n'succ 3 >>= wrap'n'succ
+5
+Prelude> runIdentity $ wrap'n'succ 3 >>= wrap'n'succ >>= wrap'n'succ
+6
+Prelude> 3 & succ & succ & succ
+6
+Prelude> runIdentity $ return 3 >>= wrap'n'succ >>= wrap'n'succ >>= wrap'n'succ
+6
+
+
+**
+Если некоторый тип является представителем класса Monad, то его можно сделать представителем класса Functor, используя функцию return и оператор >>=. Причём, это можно сделать даже не зная, как данный тип устроен.
+
+Пусть вам дан тип
+
+data SomeType a = ...
+
+и он является представителем класса Monad. Сделайте его представителем класса Functor.
+
+instance Functor SomeType where
+    fmap f x = (>>=) x (return . f)
+**
+
+
 -}
