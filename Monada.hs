@@ -366,5 +366,104 @@ tokenize :: String -> Maybe [Token]
 tokenize input = sequence . map asToken $ words input
 **
 
+-- Список и Maybe как монады
+
+Prelude> return 4 :: [Int]
+[4]
+Prelude> [1,2] >>= (\x -> [x,x,x])
+[1,1,1,2,2,2]
+Prelude> [1,2] >>= (\x -> [x])
+[1,2]
+Prelude> [1,2] >>= (\x -> [])
+[]
+
+
+instance Monad [] where
+  return x = [x]
+  (>>=) xs k = concat (map k xs)
+  fail _ = []
+
+list = [(x,y) | x <- [1,2,3], y <- [4,5,6]] -- генератор списков транислируется в list'
+
+list' = do                                  -- do-нотация (синт. сахар) транслируется в list''
+  x <- [1,2,3]
+  y <- [4,5,6]
+  return (x,y)
+
+list'' =                                    -- монадические вычисления на низком уровне
+  [1,2,3] >>= (\x ->
+  [4,5,6] >>= (\y ->
+  return (x,y)))
+
+**
+Пусть имеется тип данных, который описывает конфигурацию шахматной доски:
+
+data Board = ...
+Кроме того, пусть задана функция
+nextPositions :: Board -> [Board]
+которая получает на вход некоторую конфигурацию доски и возвращает все возможные конфигурации, которые могут получиться, если какая-либо фигура сделает один ход. Напишите функцию:
+nextPositionsN :: Board -> Int -> (Board -> Bool) -> [Board]
+которая принимает конфигурацию доски, число ходов n, предикат и возвращает все возможные конфигурации досок, которые могут получиться, если фигуры сделают n ходов и которые удовлетворяют заданному предикату. При n < 0 функция возвращает пустой список.
+
+nextPositionsN :: Board -> Int -> (Board -> Bool) -> [Board]
+nextPositionsN b n pred | n < 0     = []
+                        | n == 0    = filter pred [b]
+                        | otherwise = do
+                          x <- nextPositions b
+                          y <- nextPositionsN x (n - 1) pred
+                          return y
+**
+
+lst = [(x,y) | x <- [1,2,3], y <- [1,2], x /= y] -- здесь дополнительное условие фильтрует элементы не равные друг другу
+
+Prelude> lst
+[(1,2),(2,1),(3,1),(3,2)]
+
+lst' = do
+  x <- [1,2,3]
+  y <- [1,2]
+  True <- return (x /= y) -- здесь выполняется сопоставление с образцом (True) и если неудачное то возвращается пустой список
+  return (x,y)
+
+lst'' =
+  [1,2,3]         >>= (\x ->
+  [1,2]           >>= (\y ->
+  return (x \= y) >>= (\b ->
+  case b of True -> return (x,y)
+            _    -> fail "...")))
+
+
+**
+Используя монаду списка и do-нотацию, реализуйте функцию
+
+pythagoreanTriple :: Int -> [(Int, Int, Int)]
+
+которая принимает на вход некоторое число x и возвращает список троек (a,b,c), таких что
+
+a2+b2=c2,a>0,b>0,c>0,c≤x,a<b
+
+Число x может быть ≤0 , на таком входе должен возвращаться пустой список.
+
+GHCi> pythagoreanTriple 5
+[(3,4,5)]
+
+GHCi> pythagoreanTriple 0
+[]
+
+GHCi> pythagoreanTriple 10
+[(3,4,5),(6,8,10)]
+
+pythagoreanTriple :: Int -> [(Int, Int, Int)]
+pythagoreanTriple x | x <= 0    = []
+                    | otherwise = do
+                      c <- [1..x]
+                      b <- [1..c]
+                      a <- [1..b]
+                      True <- return ((a^2 + b^2) == c^2)
+                      return (a,b,c)
+**
+
+
+
 
 -}
