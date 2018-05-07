@@ -287,4 +287,183 @@ Prelude> runIdentity goWrap5
 Prelude> :t goWrap5
 goWrap5 :: Identity (Integer, Integer) -- здесь указан тип возвращаемого контейнера
 
+
+-- Monada Maybe
+{-
+class Monad m where
+  return :: a -> m a
+  (>>=) :: m a -> (a -> m b) -> m b  -- оператор связывания
+  (>>) :: m a -> m b -> m b          -- оператор легковесного связывания
+  fail :: String -> m a
+ -}
+
+
+import Prelude hiding (Maybe,Just,Nothing)
+
+data Maybe a = Nothing | Just a
+  deriving (Eq,Show)
+
+instance Monad Maybe where
+  return x = Just x
+
+  (>>=) (Just x) k = k x -- k-стрелка Клейсли
+  (>>=) Nothing _  = Nothing
+
+  (>>) m (Just _) = m
+  (>>) _ Nothing  = Nothing
+
+  fail _ = Nothing
+
+**
+Рассмотрим язык арифметических выражений, которые состоят из чисел, скобок, операций сложения и вычитания. Конструкции данного языка можно представить следующим типом данных:
+
+data Token = Number Int | Plus | Minus | LeftBrace | RightBrace
+    deriving (Eq, Show)
+Реализуйте лексер арифметических выражений. Для начала реализуйте следующую функцию:
+
+asToken :: String -> Maybe Token
+
+Она проверяет, является ли переданная строка числом (используйте функцию isDigit из модуля Data.Char), знаком "+" или "-", открывающейся или закрывающейся скобкой. Если является, то она возвращает нужное значение обёрнутое в Just, в противном случае - Nothing:
+
+GHCi> asToken "123"
+Just (Number 123)
+
+GHCi> asToken "abc"
+Nothing
+
+Далее, реализуйте функцию tokenize:
+
+tokenize :: String -> Maybe [Token]
+Функция принимает на вход строку и если каждое слово является корректным токеном, то она возвращает список этих токенов, завёрнутый в Just. В противном случае возвращается Nothing.
+
+Функция должна разбивать входную строку на отдельные слова по пробелам (используйте библиотечную функцию words). Далее, полученный список строк должен быть свёрнут с использованием функции asToken и свойств монады Maybe:
+
+GHCi> tokenize "1 + 2"
+Just [Number 1,Plus,Number 2]
+
+GHCi> tokenize "1 + ( 7 - 2 )"
+Just [Number 1,Plus,LeftBrace,Number 7,Minus,Number 2,RightBrace]
+
+GHCi> tokenize "1 + abc"
+Nothing
+Обратите внимание, что скобки отделяются пробелами от остальных выражений!
+
+-- data Token = Number Int | Plus | Minus | LeftBrace | RightBrace    
+--     deriving (Eq, Show)
+-- Тип Token уже объявлен, его писать не нужно
+
+import Data.Char
+
+asToken :: String -> Maybe Token
+asToken s | (all isDigit s) = Just $ Number $ read s
+          | s == "+"        = Just Plus
+          | s == "-"        = Just Minus
+          | s == "("        = Just LeftBrace
+          | s == ")"        = Just RightBrace
+          | otherwise       = Nothing
+
+tokenize :: String -> Maybe [Token]
+tokenize input = sequence . map asToken $ words input
+**
+
+-- Список и Maybe как монады
+
+Prelude> return 4 :: [Int]
+[4]
+Prelude> [1,2] >>= (\x -> [x,x,x])
+[1,1,1,2,2,2]
+Prelude> [1,2] >>= (\x -> [x])
+[1,2]
+Prelude> [1,2] >>= (\x -> [])
+[]
+
+
+instance Monad [] where
+  return x = [x]
+  (>>=) xs k = concat (map k xs)
+  fail _ = []
+
+list = [(x,y) | x <- [1,2,3], y <- [4,5,6]] -- генератор списков транислируется в list'
+
+list' = do                                  -- do-нотация (синт. сахар) транслируется в list''
+  x <- [1,2,3]
+  y <- [4,5,6]
+  return (x,y)
+
+list'' =                                    -- монадические вычисления на низком уровне
+  [1,2,3] >>= (\x ->
+  [4,5,6] >>= (\y ->
+  return (x,y)))
+
+**
+Пусть имеется тип данных, который описывает конфигурацию шахматной доски:
+
+data Board = ...
+Кроме того, пусть задана функция
+nextPositions :: Board -> [Board]
+которая получает на вход некоторую конфигурацию доски и возвращает все возможные конфигурации, которые могут получиться, если какая-либо фигура сделает один ход. Напишите функцию:
+nextPositionsN :: Board -> Int -> (Board -> Bool) -> [Board]
+которая принимает конфигурацию доски, число ходов n, предикат и возвращает все возможные конфигурации досок, которые могут получиться, если фигуры сделают n ходов и которые удовлетворяют заданному предикату. При n < 0 функция возвращает пустой список.
+
+nextPositionsN :: Board -> Int -> (Board -> Bool) -> [Board]
+nextPositionsN b n pred | n < 0     = []
+                        | n == 0    = filter pred [b]
+                        | otherwise = do
+                          x <- nextPositions b
+                          y <- nextPositionsN x (n - 1) pred
+                          return y
+**
+
+lst = [(x,y) | x <- [1,2,3], y <- [1,2], x /= y] -- здесь дополнительное условие фильтрует элементы не равные друг другу
+
+Prelude> lst
+[(1,2),(2,1),(3,1),(3,2)]
+
+lst' = do
+  x <- [1,2,3]
+  y <- [1,2]
+  True <- return (x /= y) -- здесь выполняется сопоставление с образцом (True) и если неудачное то возвращается пустой список
+  return (x,y)
+
+lst'' =
+  [1,2,3]         >>= (\x ->
+  [1,2]           >>= (\y ->
+  return (x \= y) >>= (\b ->
+  case b of True -> return (x,y)
+            _    -> fail "...")))
+
+
+**
+Используя монаду списка и do-нотацию, реализуйте функцию
+
+pythagoreanTriple :: Int -> [(Int, Int, Int)]
+
+которая принимает на вход некоторое число x и возвращает список троек (a,b,c), таких что
+
+a2+b2=c2,a>0,b>0,c>0,c≤x,a<b
+
+Число x может быть ≤0 , на таком входе должен возвращаться пустой список.
+
+GHCi> pythagoreanTriple 5
+[(3,4,5)]
+
+GHCi> pythagoreanTriple 0
+[]
+
+GHCi> pythagoreanTriple 10
+[(3,4,5),(6,8,10)]
+
+pythagoreanTriple :: Int -> [(Int, Int, Int)]
+pythagoreanTriple x | x <= 0    = []
+                    | otherwise = do
+                      c <- [1..x]
+                      b <- [1..c]
+                      a <- [1..b]
+                      True <- return ((a^2 + b^2) == c^2)
+                      return (a,b,c)
+**
+
+
+
+
 -}
